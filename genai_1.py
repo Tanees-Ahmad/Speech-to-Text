@@ -1,12 +1,18 @@
 import streamlit as st
 import whisper
+import tempfile
 
 # Load Whisper model
 model = whisper.load_model("base")
 
 def transcribe_audio(audio_file):
+    # Save the uploaded file to a temporary file
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        temp_file.write(audio_file.read())
+        temp_file_path = temp_file.name
+    
     # Transcribe the audio using Whisper
-    result = model.transcribe(audio_file)
+    result = model.transcribe(temp_file_path)
     return result['text']
 
 # Streamlit app

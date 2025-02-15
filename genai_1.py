@@ -1,16 +1,10 @@
 import streamlit as st
 import tempfile
-
-# Import Whisper model with error handling
-try:
-    from whisper import load_model
-except ImportError as e:
-    st.error(f"Error importing Whisper module: {e}")
-    st.stop()
+import whisper  # Corrected import
 
 # Load Whisper model with error handling
 try:
-    model = load_model("base")
+    model = whisper.load_model("base")
 except Exception as e:
     st.error(f"Error loading Whisper model: {e}")
     st.stop()

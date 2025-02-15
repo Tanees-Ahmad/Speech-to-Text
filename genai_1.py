@@ -3,14 +3,14 @@ import tempfile
 
 # Import Whisper model with error handling
 try:
-    from whisper import load_model
+    import openai_whisper as whisper
 except ImportError as e:
     st.error(f"Error importing Whisper module: {e}")
     st.stop()
 
 # Load Whisper model with error handling
 try:
-    model = load_model("base")
+    model = whisper.load_model("base")
 except Exception as e:
     st.error(f"Error loading Whisper model: {e}")
     st.stop()

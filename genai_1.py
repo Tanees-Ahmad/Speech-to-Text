@@ -2,8 +2,12 @@ import streamlit as st
 import whisper
 import tempfile
 
-# Load Whisper model
-model = whisper.load_model("base")
+# Load Whisper model with error handling
+try:
+    model = whisper.load_model("base")
+except Exception as e:
+    st.error(f"Error loading Whisper model: {e}")
+    st.stop()
 
 def transcribe_audio(audio_file):
     # Save the uploaded file to a temporary file

@@ -31,7 +31,7 @@ def check_ffmpeg():
 # Check if ffmpeg is installed
 check_ffmpeg()
 
-model_name = "base"
+model_name = "tiny"
 
 # Load Whisper model with error handling and caching
 @st.cache_resource

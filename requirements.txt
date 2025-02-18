@@ -6,3 +6,4 @@ openai-whisper
 torchaudio
 pydub
 ffmpeg
+

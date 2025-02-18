@@ -31,16 +31,18 @@ def check_ffmpeg():
 # Check if ffmpeg is installed
 check_ffmpeg()
 
+model_name = "small"
+
 # Load Whisper model with error handling and caching
 @st.cache_resource
 def load_model():
     try:
-        return whisper.load_model("tiny")
+        return whisper.load_model(model_name)
     except Exception as e:
         st.error(f"Error loading Whisper model: {e}. Retrying...")
-        delete_model_file("tiny")
+        delete_model_file(model_name)
         try:
-            return whisper.load_model("tiny")
+            return whisper.load_model(model_name)
         except Exception as e:
             st.error(f"Failed to load Whisper model after retry: {e}")
             st.stop()

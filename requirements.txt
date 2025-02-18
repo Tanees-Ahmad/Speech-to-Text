@@ -5,5 +5,4 @@ ffmpeg-python
 openai-whisper
 torchaudio
 pydub
-ffmpeg
 

@@ -3,6 +3,7 @@ import whisper
 from pydub import AudioSegment
 from io import BytesIO
 import time
+import tempfile
 
 # Set page config as the first command
 st.set_page_config(page_title="Whisper AI Song-to-Lyrics Transcriber")
@@ -22,9 +23,14 @@ def load_model():
 
 model = load_model()
 
-# Transcribe a single segment of audio from in-memory buffer
+# Function to transcribe a single segment
 def transcribe_segment(segment_buffer):
-    result = model.transcribe(segment_buffer)
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_file:
+        # Write the buffer into a temporary file
+        temp_file.write(segment_buffer.read())
+        temp_file_path = temp_file.name
+        
+    result = model.transcribe(temp_file_path)
     return result['text']
 
 # Main function to transcribe audio
@@ -38,7 +44,7 @@ def transcribe_audio(audio_file):
     segment_length = 10 * 1000  # 10 seconds in milliseconds
     segments = [audio[i:i + segment_length] for i in range(0, len(audio), segment_length)]
     
-    # Transcribe segments in memory
+    # Transcribe segments
     transcriptions = []
     for idx, segment in enumerate(segments):
         # Export segment to an in-memory buffer (BytesIO)
@@ -46,7 +52,7 @@ def transcribe_audio(audio_file):
         segment.export(segment_buffer, format="wav")
         segment_buffer.seek(0)  # Rewind the buffer for reading
         
-        # Transcribe segment and collect transcription
+        # Transcribe the segment
         transcription = transcribe_segment(segment_buffer)
         transcriptions.append(transcription)
     

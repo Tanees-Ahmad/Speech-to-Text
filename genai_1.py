@@ -1,11 +1,10 @@
 import streamlit as st
-import tempfile
 import whisper
-import os
 from pydub import AudioSegment
-from pathlib import Path
-from multiprocessing import Pool
-import subprocess
+from io import BytesIO
+import time
+import subprocess  # Make sure subprocess is imported
+from pathlib import Path  # Make sure Path is imported
 
 # Function to delete the existing model file
 def delete_model_file(model_name):
@@ -28,49 +27,50 @@ def check_ffmpeg():
 # Check if ffmpeg is installed
 check_ffmpeg()
 
-# Load Whisper model with error handling
-model_name = "tiny"
-try:
-    model = whisper.load_model(model_name)
-except Exception as e:
-    st.error(f"Error loading Whisper model: {e}. Retrying...")
-    delete_model_file(model_name)
+# Load Whisper model with error handling and caching
+@st.cache_resource
+def load_model():
     try:
-        model = whisper.load_model(model_name)
+        return whisper.load_model("tiny")
     except Exception as e:
-        st.error(f"Failed to load Whisper model after retry: {e}")
-        st.stop()
+        st.error(f"Error loading Whisper model: {e}. Retrying...")
+        delete_model_file("tiny")
+        try:
+            return whisper.load_model("tiny")
+        except Exception as e:
+            st.error(f"Failed to load Whisper model after retry: {e}")
+            st.stop()
 
-def transcribe_segment(segment_path):
-    result = model.transcribe(segment_path)
-    os.remove(segment_path)
+model = load_model()
+
+# Transcribe a single segment of audio
+def transcribe_segment(segment_buffer):
+    result = model.transcribe(segment_buffer)
     return result['text']
 
+# Main function to transcribe audio
 def transcribe_audio(audio_file):
-    # Save the uploaded file to a temporary file
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_file:
-        temp_file.write(audio_file.read())
-        temp_file_path = temp_file.name
+    start_time = time.time()
     
     # Load the audio file using pydub
-    audio = AudioSegment.from_file(temp_file_path)
+    audio = AudioSegment.from_file(audio_file)
     
     # Split the audio into 30-second segments
     segment_length = 30 * 1000  # 30 seconds in milliseconds
     segments = [audio[i:i + segment_length] for i in range(0, len(audio), segment_length)]
     
-    # Export segments to temporary files
-    segment_paths = []
-    for i, segment in enumerate(segments):
-        segment_path = f"{temp_file_path}_{i}.wav"
-        segment.export(segment_path, format="wav")
-        segment_paths.append(segment_path)
+    # Transcribe segments in memory
+    transcriptions = []
+    for idx, segment in enumerate(segments):
+        # Export segment to in-memory buffer
+        segment_buffer = BytesIO()
+        segment.export(segment_buffer, format="wav")
+        segment_buffer.seek(0)
+        
+        # Transcribe segment
+        transcription = transcribe_segment(segment_buffer)
+        transcriptions.append(transcription)
     
-    # Transcribe segments in parallel
-    with Pool() as pool:
-        transcriptions = pool.map(transcribe_segment, segment_paths)
-    
-    os.remove(temp_file_path)
     return " ".join(transcriptions).strip()
 
 # Streamlit app

@@ -65,8 +65,8 @@ def transcribe_audio(audio_file):
     # Load the audio file using pydub
     audio = AudioSegment.from_file(audio_file)
     
-    # Split the audio into 30-second segments
-    segment_length = 30 * 1000  # 30 seconds in milliseconds
+    # Split the audio into 10-second segments
+    segment_length = 10 * 1000  # 30 seconds in milliseconds
     segments = [audio[i:i + segment_length] for i in range(0, len(audio), segment_length)]
     
     # Transcribe segments in memory

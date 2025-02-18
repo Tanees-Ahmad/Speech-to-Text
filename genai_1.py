@@ -12,22 +12,6 @@ from pydub.exceptions import CouldntDecodeError
 # Set page config as the first command
 st.set_page_config(page_title="Whisper AI Song-to-Lyrics Transcriber")
 
-import os
-import sys
-from pydub.utils import which
-
-# Check if ffmpeg is installed and accessible
-def check_ffmpeg():
-    ffmpeg_path = which("ffmpeg")
-    if ffmpeg_path is None:
-        st.error("Error: ffmpeg is not installed or not found in the system PATH. Please install ffmpeg.")
-        sys.exit(1)  # Exit the program
-    else:
-        print(f"ffmpeg found at: {ffmpeg_path}")
-
-check_ffmpeg()  # Check if ffmpeg is available before proceeding
-
-
 # Load Whisper model with error handling and GPU support
 @st.cache_resource
 def load_model():
@@ -75,23 +59,30 @@ def is_audio_empty(audio_file):
 # Main function to transcribe audio
 def transcribe_audio(audio_file):
     start_time = time.time()
-    
-    # Check if the audio file is empty
-    if is_audio_empty(audio_file):
-        st.error("Error: The uploaded audio file is empty or invalid.")
+
+    # Check if the audio file is empty or invalid
+    try:
+        audio = AudioSegment.from_file(audio_file)
+    except CouldntDecodeError as e:
+        st.error(f"Error decoding audio file: {e}. Please upload a valid audio file.")
+        return ""
+    except Exception as e:
+        st.error(f"Unexpected error: {e}.")
         return ""
 
-    # Load the audio file using pydub
-    audio = AudioSegment.from_file(audio_file)
-    
+    # Check if the audio is empty
+    if audio.duration_seconds == 0:
+        st.warning("The uploaded audio file is empty.")
+        return ""
+
     # Convert the entire audio file to an in-memory buffer
     audio_buffer = BytesIO()
     audio.export(audio_buffer, format="wav")
     audio_buffer.seek(0)  # Rewind the buffer so we can read from the start
-    
+
     # Transcribe the entire audio
     transcription = transcribe_segment(audio_buffer)
-    
+
     return transcription
 
 

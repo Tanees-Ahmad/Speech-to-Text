@@ -7,6 +7,7 @@ from io import BytesIO
 import tempfile
 import torch
 import os
+from pydub.exceptions import CouldntDecodeError
 
 # Set page config as the first command
 st.set_page_config(page_title="Whisper AI Song-to-Lyrics Transcriber")
@@ -42,13 +43,17 @@ def transcribe_segment(segment_buffer):
 
 # Function to check if the audio is empty
 def is_audio_empty(audio_file):
-    # Load the audio file using pydub
-    audio = AudioSegment.from_file(audio_file)
-    
-    # Check if the audio has any content
-    if audio.duration_seconds == 0:
+    try:
+        # Load the audio file using pydub
+        audio = AudioSegment.from_file(audio_file)
+        
+        # Check if the audio has any content
+        if audio.duration_seconds == 0:
+            return True
+        return False
+    except CouldntDecodeError:
+        st.error("Error: The audio file format is not supported or cannot be decoded. Please upload a valid audio file.")
         return True
-    return False
 
 
 # Main function to transcribe audio

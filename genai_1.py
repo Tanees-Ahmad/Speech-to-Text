@@ -6,6 +6,7 @@ from pydub import AudioSegment
 from io import BytesIO
 import tempfile
 import torch
+import os
 
 # Set page config as the first command
 st.set_page_config(page_title="Whisper AI Song-to-Lyrics Transcriber")
@@ -38,10 +39,27 @@ def transcribe_segment(segment_buffer):
     print(f"Segment transcribed in {end - start:.2f} seconds.")
     return result['text']
 
+
+# Function to check if the audio is empty
+def is_audio_empty(audio_file):
+    # Load the audio file using pydub
+    audio = AudioSegment.from_file(audio_file)
+    
+    # Check if the audio has any content
+    if audio.duration_seconds == 0:
+        return True
+    return False
+
+
 # Main function to transcribe audio
 def transcribe_audio(audio_file):
     start_time = time.time()
     
+    # Check if the audio file is empty
+    if is_audio_empty(audio_file):
+        st.error("Error: The uploaded audio file is empty or invalid.")
+        return ""
+
     # Load the audio file using pydub
     audio = AudioSegment.from_file(audio_file)
     

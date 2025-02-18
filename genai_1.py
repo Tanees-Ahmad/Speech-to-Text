@@ -5,13 +5,28 @@ import os
 from pydub import AudioSegment
 from pathlib import Path
 from multiprocessing import Pool
+import subprocess
 
 # Function to delete the existing model file
 def delete_model_file(model_name):
     model_dir = Path.home() / ".cache" / "whisper" / model_name
-    if (model_dir.exists()):
+    if model_dir.exists():
         for file in model_dir.glob("*"):
             file.unlink()
+
+# Function to check if ffmpeg is installed
+def check_ffmpeg():
+    try:
+        subprocess.run(["ffmpeg", "-version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except subprocess.CalledProcessError as e:
+        st.error(f"ffmpeg error: {e}")
+        st.stop()
+    except FileNotFoundError:
+        st.error("ffmpeg not found. Please install ffmpeg and ensure it is in your system's PATH.")
+        st.stop()
+
+# Check if ffmpeg is installed
+check_ffmpeg()
 
 # Load Whisper model with error handling
 model_name = "tiny"

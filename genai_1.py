@@ -1,8 +1,8 @@
+import time
 import streamlit as st
 import whisper
 from pydub import AudioSegment
 from io import BytesIO
-import time
 import tempfile
 
 # Set page config as the first command
@@ -14,12 +14,8 @@ def load_model():
     try:
         return whisper.load_model("tiny")
     except Exception as e:
-        st.error(f"Error loading Whisper model: {e}. Retrying...")
-        try:
-            return whisper.load_model("tiny")
-        except Exception as e:
-            st.error(f"Failed to load Whisper model after retry: {e}")
-            st.stop()
+        st.error(f"Error loading Whisper model: {e}")
+        st.stop()
 
 model = load_model()
 

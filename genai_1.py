@@ -6,6 +6,9 @@ import time
 import subprocess  # Make sure subprocess is imported
 from pathlib import Path  # Make sure Path is imported
 
+# Set page config first, before any other Streamlit command
+st.set_page_config(page_title="Whisper AI Song-to-Lyrics Transcriber")
+
 # Function to delete the existing model file
 def delete_model_file(model_name):
     model_dir = Path.home() / ".cache" / "whisper" / model_name
@@ -74,7 +77,6 @@ def transcribe_audio(audio_file):
     return " ".join(transcriptions).strip()
 
 # Streamlit app
-st.set_page_config(page_title="Whisper AI Song-to-Lyrics Transcriber")
 st.title("Whisper AI Song-to-Lyrics Transcriber")
 st.write("Upload a song in any language to transcribe it into lyrics using Whisper AI. Supports multiple languages!")
 

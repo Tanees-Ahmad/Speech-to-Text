@@ -12,6 +12,22 @@ from pydub.exceptions import CouldntDecodeError
 # Set page config as the first command
 st.set_page_config(page_title="Whisper AI Song-to-Lyrics Transcriber")
 
+import os
+import sys
+from pydub.utils import which
+
+# Check if ffmpeg is installed and accessible
+def check_ffmpeg():
+    ffmpeg_path = which("ffmpeg")
+    if ffmpeg_path is None:
+        st.error("Error: ffmpeg is not installed or not found in the system PATH. Please install ffmpeg.")
+        sys.exit(1)  # Exit the program
+    else:
+        print(f"ffmpeg found at: {ffmpeg_path}")
+
+check_ffmpeg()  # Check if ffmpeg is available before proceeding
+
+
 # Load Whisper model with error handling and GPU support
 @st.cache_resource
 def load_model():

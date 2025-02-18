@@ -1,3 +1,6 @@
 streamlit
 whisper
 torch  # Whisper requires PyTorch
+ffmpeg-python
+openai-whisper
+torchaudio

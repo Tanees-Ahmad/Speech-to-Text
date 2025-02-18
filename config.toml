@@ -1,0 +1,3 @@
+[watch]
+# Exclude the torch module from being watched
+watchlist = ["!torch"]

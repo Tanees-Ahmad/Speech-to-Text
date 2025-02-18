@@ -1,5 +1,4 @@
 import time
-from tracemalloc import start
 import streamlit as st
 import whisper
 from pydub import AudioSegment
@@ -34,8 +33,6 @@ def transcribe_segment(segment_buffer):
         temp_file_path = temp_file.name
         
     result = model.transcribe(temp_file_path)
-    end = time.time()
-    print(f"Segment transcribed in {end - start:.2f} seconds.")
     return result['text']
 
 

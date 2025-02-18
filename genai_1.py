@@ -1,5 +1,3 @@
-from pathlib import Path
-import subprocess
 import streamlit as st
 import whisper
 from pydub import AudioSegment
@@ -9,27 +7,6 @@ import time
 # Set page config as the first command
 st.set_page_config(page_title="Whisper AI Song-to-Lyrics Transcriber")
 
-# Function to delete the existing model file
-def delete_model_file(model_name):
-    model_dir = Path.home() / ".cache" / "whisper" / model_name
-    if model_dir.exists():
-        for file in model_dir.glob("*"):
-            file.unlink()
-
-# Function to check if ffmpeg is installed
-def check_ffmpeg():
-    try:
-        subprocess.run(["ffmpeg", "-version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    except subprocess.CalledProcessError as e:
-        st.error(f"ffmpeg error: {e}")
-        st.stop()
-    except FileNotFoundError:
-        st.error("ffmpeg not found. Please install ffmpeg and ensure it is in your system's PATH.")
-        st.stop()
-
-# Check if ffmpeg is installed
-check_ffmpeg()
-
 # Load Whisper model with error handling and caching
 @st.cache_resource
 def load_model():
@@ -37,7 +14,6 @@ def load_model():
         return whisper.load_model("tiny")
     except Exception as e:
         st.error(f"Error loading Whisper model: {e}. Retrying...")
-        delete_model_file("tiny")
         try:
             return whisper.load_model("tiny")
         except Exception as e:
@@ -46,7 +22,7 @@ def load_model():
 
 model = load_model()
 
-# Transcribe a single segment of audio
+# Transcribe a single segment of audio from in-memory buffer
 def transcribe_segment(segment_buffer):
     result = model.transcribe(segment_buffer)
     return result['text']
@@ -58,19 +34,19 @@ def transcribe_audio(audio_file):
     # Load the audio file using pydub
     audio = AudioSegment.from_file(audio_file)
     
-    # Split the audio into 30-second segments (or 10, 15 as per your preference)
+    # Split the audio into 10-second segments (or 15 as per your preference)
     segment_length = 10 * 1000  # 10 seconds in milliseconds
     segments = [audio[i:i + segment_length] for i in range(0, len(audio), segment_length)]
     
     # Transcribe segments in memory
     transcriptions = []
     for idx, segment in enumerate(segments):
-        # Export segment to in-memory buffer
+        # Export segment to an in-memory buffer (BytesIO)
         segment_buffer = BytesIO()
         segment.export(segment_buffer, format="wav")
-        segment_buffer.seek(0)
+        segment_buffer.seek(0)  # Rewind the buffer for reading
         
-        # Transcribe segment
+        # Transcribe segment and collect transcription
         transcription = transcribe_segment(segment_buffer)
         transcriptions.append(transcription)
     

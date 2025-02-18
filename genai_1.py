@@ -1,3 +1,4 @@
+import time
 import streamlit as st
 import whisper
 from pydub import AudioSegment
@@ -33,26 +34,21 @@ def transcribe_segment(segment_buffer):
 
 # Main function to transcribe audio
 def transcribe_audio(audio_file):
+    start_time = time.time()
+    
     # Load the audio file using pydub
     audio = AudioSegment.from_file(audio_file)
     
-    # Split the audio into 10-second segments (or 5 seconds as an example)
-    segment_length =  30 * 1000  # 5 seconds in milliseconds
-    segments = [audio[i:i + segment_length] for i in range(0, len(audio), segment_length)]
+    # Convert the entire audio file to an in-memory buffer
+    audio_buffer = BytesIO()
+    audio.export(audio_buffer, format="wav")
+    audio_buffer.seek(0)  # Rewind the buffer so we can read from the start
     
-    # Transcribe segments
-    transcriptions = []
-    for idx, segment in enumerate(segments):
-        # Export segment to an in-memory buffer (BytesIO)
-        segment_buffer = BytesIO()
-        segment.export(segment_buffer, format="wav")
-        segment_buffer.seek(0)  # Rewind the buffer for reading
-        
-        # Transcribe the segment
-        transcription = transcribe_segment(segment_buffer)
-        transcriptions.append(transcription)
+    # Transcribe the entire audio
+    transcription = transcribe_segment(audio_buffer)
     
-    return " ".join(transcriptions).strip()
+    return transcription
+
 
 # Streamlit app
 st.title("Whisper AI Song-to-Lyrics Transcriber")

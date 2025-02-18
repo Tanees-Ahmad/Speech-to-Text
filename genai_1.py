@@ -1,21 +1,23 @@
-import time
 import streamlit as st
 import whisper
 from pydub import AudioSegment
 from io import BytesIO
 import tempfile
+import torch
 
 # Set page config as the first command
 st.set_page_config(page_title="Whisper AI Song-to-Lyrics Transcriber")
 
-# Load Whisper model with error handling and caching
+# Load Whisper model with error handling and GPU support
 @st.cache_resource
 def load_model():
     try:
-        return whisper.load_model("tiny")
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        model = whisper.load_model("tiny").to(device)
+        return model
     except Exception as e:
         st.error(f"Error loading Whisper model: {e}")
-        st.stop()
+        st.stop()  # Stop the app if the model fails to load
 
 model = load_model()
 
@@ -31,13 +33,11 @@ def transcribe_segment(segment_buffer):
 
 # Main function to transcribe audio
 def transcribe_audio(audio_file):
-    start_time = time.time()
-    
     # Load the audio file using pydub
     audio = AudioSegment.from_file(audio_file)
     
-    # Split the audio into 10-second segments (or 15 as per your preference)
-    segment_length = 10 * 1000  # 10 seconds in milliseconds
+    # Split the audio into 10-second segments (or 5 seconds as an example)
+    segment_length =  30 * 1000  # 5 seconds in milliseconds
     segments = [audio[i:i + segment_length] for i in range(0, len(audio), segment_length)]
     
     # Transcribe segments

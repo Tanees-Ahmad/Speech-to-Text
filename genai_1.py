@@ -66,7 +66,7 @@ def transcribe_audio(audio_file):
     audio = AudioSegment.from_file(audio_file)
     
     # Split the audio into 10-second segments
-    segment_length = 10 * 1000  # 30 seconds in milliseconds
+    segment_length = 20 * 1000  # 30 seconds in milliseconds
     segments = [audio[i:i + segment_length] for i in range(0, len(audio), segment_length)]
     
     # Transcribe segments in memory

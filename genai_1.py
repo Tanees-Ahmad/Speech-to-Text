@@ -12,8 +12,6 @@ from pydub.exceptions import CouldntDecodeError
 # Set page config as the first command
 st.set_page_config(page_title="Whisper AI Song-to-Lyrics Transcriber")
 
-# Load Whisper model with error handling and GPU support
-@st.cache_resource
 def load_model():
     try:
         device = "cuda" if torch.cuda.is_available() else "cpu"

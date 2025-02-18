@@ -3,8 +3,9 @@ import whisper
 from pydub import AudioSegment
 from io import BytesIO
 import time
-import subprocess  # Make sure subprocess is imported
-from pathlib import Path  # Make sure Path is imported
+import subprocess
+from pathlib import Path
+import tempfile
 
 # Set page config first, before any other Streamlit command
 st.set_page_config(page_title="Whisper AI Song-to-Lyrics Transcriber")
@@ -48,7 +49,11 @@ model = load_model()
 
 # Transcribe a single segment of audio
 def transcribe_segment(segment_buffer):
-    result = model.transcribe(segment_buffer)
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_file:
+        temp_file.write(segment_buffer.read())
+        temp_file_path = temp_file.name
+    
+    result = model.transcribe(temp_file_path)
     return result['text']
 
 # Main function to transcribe audio
